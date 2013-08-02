@@ -1,6 +1,6 @@
 package com.github.tachesimazzoca.scala.example
 
-object CollectionExample {
+object TraversableExample {
   def main(args: Array[String]) {
 
       // See scala.collection.Traversable
