@@ -1,20 +1,18 @@
-package com.github.tachesimazzoca.scala.example
+package example.actor
 
 import scala.actors.Actor
 import scala.actors.Actor._
 
-object ActorExample {
-  def main(args: Array[String]) {
-    val sleeper = new NonBlockingSleeper
-    sleeper.start()
+object Main extends App {
+  val sleeper = new NonBlockingSleeper
+  sleeper.start()
 
-    sleeper ! (PrintRequest("Hello1"), 2000L)
-    println("Sent Hello1 ....")
-    sleeper ! (PrintRequest("Hello2"), 1000L)
-    println("Sent Hello2 ....")
+  sleeper ! (PrintRequest("Hello1"), 2000L)
+  println("Sent Hello1 ....")
+  sleeper ! (PrintRequest("Hello2"), 1000L)
+  println("Sent Hello2 ....")
 
-    sleeper ! (StopRequest("Bye ...."), 5000L)
-  }
+  sleeper ! (StopRequest("Bye ...."), 5000L)
 }
 
 abstract class SleepRequest(val msg: String)
