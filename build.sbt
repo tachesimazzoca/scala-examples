@@ -12,7 +12,13 @@ org.scalastyle.sbt.PluginKeys.config <<= baseDirectory {
 
 scalacOptions ++= Seq("-deprecation", "-unchecked")
 
+resolvers ++= Seq(
+  "Sonatype Releases" at "http://oss.sonatype.org/content/repositories/releases"
+)
+
 libraryDependencies ++= Seq(
   "org.scala-lang" % "scala-actors" % "2.10.2",
-  "org.scalatest" % "scalatest_2.10" % "1.9.1" % "test"
+  "junit" % "junit" % "4.10" % "test",
+  "org.scalatest" % "scalatest_2.10" % "1.9.1" % "test",
+  "org.scalacheck" %% "scalacheck" % "1.10.1" % "test"
 )
