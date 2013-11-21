@@ -6,13 +6,37 @@ import ExecutionContext.Implicits.global
 import scala.util.{Success, Failure}
 
 object Main extends App {
+  println("HelloExample")
+  println("============")
   HelloExample
+
   Thread.sleep(4000L)
+  println()
+
+  println("QueueExample")
+  println("============")
   QueueExample
+
   Thread.sleep(1000L)
+  println()
+
+  println("MonadExample")
+  println("============")
   MonadExample
+
   Thread.sleep(1000L)
+  println()
+
+  println("RecoveryExample")
+  println("===============")
   RecoveryExample
+
+  Thread.sleep(1000L)
+  println()
+
+  println("AndThenExample")
+  println("==============")
+  AndThenExample
   Thread.sleep(1000L)
 
   object HelloExample {
@@ -94,6 +118,21 @@ object Main extends App {
     }
     invalidOp1 fallbackTo invalidOp2 onFailure { case e =>
       println("invalidOp1 fallbackTo invalidOp2: " + e.getMessage)
+    }
+  }
+
+  object AndThenExample {
+    val items = collection.mutable.ListBuffer("Foo", "Bar")
+    future {
+      if ((math.random * 2).toInt == 0) List("Baz")
+      else Nil.tail
+    } andThen {
+      case Success(xs) => (items ++= xs)
+      case Failure(e) => println("andThen failure - " + e.getMessage)
+    } andThen {
+      case _ => items ++= List("Fuga")
+    } onComplete {
+      case _ => println(items)
     }
   }
 }
