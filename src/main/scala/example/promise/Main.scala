@@ -27,8 +27,6 @@ object Main extends App {
   Thread.sleep(1000L)
 
   object PromiseExample {
-    println("## PromiseExample")
-
     val p = promise[String]
 
     val op1 = future {
@@ -56,8 +54,6 @@ object Main extends App {
     }
 
   object CompleteExample {
-    println("## CompleteExample")
-
     val p = promise[Int]
 
     for (n <- 1 to 2) {
@@ -73,8 +69,6 @@ object Main extends App {
   }
 
   object TryCompleteExample {
-    println("## TryCompleteExample")
-
     val p = promise[Int]
 
     for (n <- 1 to 2) {
