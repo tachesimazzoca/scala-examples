@@ -1,25 +1,5 @@
-package example.device
+package example.extractor
 
-object Main extends App {
-  val devices = List(
-    Device("Mozilla/5.0 (iPhone; CPU iPhone OS 6_0 like Mac OS X)")
-  , Device("Mozilla/5.0 (iPad; CPU iPhone OS 6_0 like Mac OS X)")
-  , Device("Mozilla/5.0 (Linux; Android 4.1.1; Nexus 7 Build/JRO03S)")
-  , Device("Mozilla/4.0 (compatible; MSIE 6.0; Windows XP)")
-  )
-  for (d <- devices) {
-    d match {
-      case DeviceDeveloper(developer) => println(d + " is developed by " + developer.name + ".")
-      case _ => println(d + " is developed by unknown developer.")
-    }
-    d match {
-      case TabletDevice() => println(d + " is a tablet device.")
-      case _ => println(d + " is not a tablet device.")
-    }
-  }
-}
-
-// Device
 sealed abstract class Device(val userAgent: String)
 case class Unknown(override val userAgent: String) extends Device(userAgent)
 case class IPhone(override val userAgent: String) extends Device(userAgent)
@@ -44,14 +24,12 @@ object Device {
   }
 }
 
-// Developer (like enum)
 sealed abstract class Developer(val name: String)
 object Developer {
   case object Apple extends Developer("Apple Inc.")
   case object Google extends Developer("Google Inc.")
 }
 
-// Extractors
 object DeviceDeveloper {
   def unapply(device: Device): Option[Developer] = {
     device match {
