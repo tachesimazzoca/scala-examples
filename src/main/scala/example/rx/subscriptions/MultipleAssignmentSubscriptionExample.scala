@@ -1,6 +1,7 @@
 package example.rx.subscriptions
 
-import rx.lang.scala.subscriptions._
+import rx.lang.scala.Subscription
+import rx.lang.scala.subscriptions.MultipleAssignmentSubscription
 
 /** MultipleAssignmentSubscription represents a Subscription
  * whose underlying subscription can be swapped for another

@@ -1,6 +1,7 @@
 package example.rx.subscriptions
 
-import rx.lang.scala.subscriptions._
+import rx.lang.scala.Subscription
+import rx.lang.scala.subscriptions.CompositeSubscription
 
 /** CompositeSubscription represents a group of subscriptions
  * that are disposed together.

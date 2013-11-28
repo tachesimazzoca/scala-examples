@@ -32,7 +32,7 @@ object SubjectExample {
 
   println("PublishSubject")
   println("--------------")
-  testChannel(PublishSubject[Int](0))
+  testChannel(PublishSubject[Int]())
   println()
 
   println("ReplaySubject")
