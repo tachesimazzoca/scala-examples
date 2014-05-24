@@ -1,9 +1,9 @@
 package example
 
 package object math {
-  def abs(x: Double) = if (x < 0) -x else x
+  def abs(x: Double): Double = if (x < 0) -x else x
 
-  def factorial(x: Double) = {
+  def factorial(x: Double): Double = {
     @annotation.tailrec
     def loop(acc: Double, n: Double): Double = {
       if (n > 0) loop(acc * n, n - 1)
@@ -41,7 +41,7 @@ package object math {
    * }
    * </code>
    */
-  def sqrt(x: Double) =
+  def sqrt(x: Double): Double =
     fixedPoint(averageDamp(x / _))(1.0)
 
   private def averageDamp(f: Double => Double)(x: Double) =
