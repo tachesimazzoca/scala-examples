@@ -1,4 +1,4 @@
-package example.collection
+package example.lang
 
 import org.scalatest.FunSuite
 
