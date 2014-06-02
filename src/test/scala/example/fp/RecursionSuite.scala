@@ -1,4 +1,4 @@
-package example.math
+package example.fp
 
 import org.scalatest.FunSuite
 
@@ -6,7 +6,9 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class PackageSuite extends FunSuite {
+class RecursionSuite extends FunSuite {
+  import example.fp.Recursion._
+  
   test("abs") {
     assert(abs(123) === 123)
     assert(abs(-123) === 123)
