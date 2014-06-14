@@ -1,17 +1,5 @@
 package example.dao
 
-object Main {
-  implicit val context = Context(System.currentTimeMillis)
-
-  def main(args: Array[String]) {
-    println(UserDao.save(User(Null, Value("foo"), Null, Null)))
-    println(UserDao.save(User(Value(-1), Value("bar"), Null, Null)))
-    println(UserDao.save(User(Value(2), Value("baz"), Value(1234), Value(1234))))
-    val ctx = Context(3456)
-    println(UserDao.save(User(Value(3), Value("qux"), Value(1234), Value(1234)))(ctx))
-  }
-}
-
 sealed abstract class Field[+T] {
   def toOption: Option[T] = this match {
     case Value(x) => Some(x)
@@ -33,19 +21,11 @@ case class User(
 
 object UserDao {
   def save(user: User)(implicit ctx: Context): Either[String, User] = {
-    val id = user.id match {
-      case Null => Value(1)
-      case m => m
-    }
-    val createdAt = user.createdAt match {
-      case Null => Value(ctx.time)
-      case m => m
-    }
+    val id = Value(user.id.getOrElse(1))
+    val createdAt = Value(user.createdAt.getOrElse(ctx.time))
     val updatedAt = Value(ctx.time)
 
     if (id.get < 1) Left("User.id is out of range.")
     else Right(User(id, user.name, createdAt, updatedAt))
   }
 }
-
-case class Context(time: Long)
