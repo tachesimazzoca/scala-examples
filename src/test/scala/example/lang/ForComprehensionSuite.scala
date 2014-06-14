@@ -24,7 +24,7 @@ class ForComprehensionSuite extends FunSuite {
       }
     }
 
-  test("valid params") {
+  test("optUser: valid params") {
     val params =
       Map(
         "email" -> "foo@example.net",
@@ -34,38 +34,39 @@ class ForComprehensionSuite extends FunSuite {
     assert(optUser2(params) === expected)
   }
 
-  test("empty map") {
+  test("optUser: empty map") {
     assert(optUser(Map.empty[String, String]) === None)
     assert(optUser2(Map.empty[String, String]) === None)
   }
 
-  test("invalid keys") {
+  test("optUser: invalid keys") {
     assert(optUser(Map("name" -> "Foo")) === None)
     assert(optUser2(Map("name" -> "Foo")) === None)
   }
 
-  test("email is empty") {
+  test("optUser: email is empty") {
     assert(optUser(Map("email" -> "", "name" -> "Foo")) === None)
     assert(optUser2(Map("email" -> "", "name" -> "Bar")) === None)
   }
 
-  test("name is empty") {
+  test("optUser: name is empty") {
     assert(optUser(Map("email" -> "foo@example.net", "name" -> "")) === None)
     assert(optUser2(Map("email" -> "bar@example.net", "name" -> "")) === None)
   }
 
-  test("bank account") {
-    def parseNum(x: String): Try[Int] = Try(x.toInt)
-    def withdraw(balance: Int, a: Int): Try[Int] = {
-      val b = balance - a
-      if (b > 0) Success(b)
-      else Failure(new Error("balance is less than " + a))
+  object BankAccount {
+    def withdraw(balance: Int, amount: Int): Try[Int] = {
+      val x = balance - amount
+      if (x >= 0) Success(x)
+      else Failure(new Error("balance is less than " + amount))
     }
+  }
 
+  test("BankAccount") {
     def f(balance: String, a: String) = for {
-      x <- parseNum(balance)
-      y <- parseNum(a)
-      b <- withdraw(x, y)
+      x <- Try(balance.toInt)
+      y <- Try(a.toInt)
+      b <- BankAccount.withdraw(x, y)
     } yield b
 
     assert(f("10000", "7500") === Success(2500))
