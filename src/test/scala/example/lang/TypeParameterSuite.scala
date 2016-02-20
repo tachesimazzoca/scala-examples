@@ -8,20 +8,41 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class TypeParameterSuite extends FunSuite {
 
-  class Covariant[+A]
-  class Contravariant[-A]
-  class Invariant[A]
-
   test("variance") {
+    class Covariant[+A]
+    class Contravariant[-A]
+    class Invariant[A]
+
     val a: Covariant[AnyRef] = new Covariant[String]
     val b: Contravariant[String] = new Contravariant[AnyRef]
     val c: Invariant[String] = new Invariant[String]
   }
-  
-  class Animal { def sound: String = "rustle" }
-  class Bird extends Animal { override def sound: String = "call" }
-  class Chicken extends Bird  { override def sound: String = "cluck" }
-  
+
+  test("Array[T] is invariant") {
+    val xs: Array[Int] = Array(1, 2, 3)
+    // Array[Int] doesn't conform to expected type Array[Any]
+    //val ys: Array[Any] = xs // not compile
+  }
+
+  test("List[+A] is covariant") {
+    val xs: List[Number] = List(1, 2, 3)
+    val ys: List[Any] = xs
+    // List[Number] doesn't conform to expected type Array[Int]
+    //val ys: List[Int] = xs // not compile
+  }
+
+  class Animal {
+    def sound: String = "rustle"
+  }
+
+  class Bird extends Animal {
+    override def sound: String = "call"
+  }
+
+  class Chicken extends Bird {
+    override def sound: String = "cluck"
+  }
+
   test("trait Function1[-T1, +R] extends AnyRef") {
     val helloAnimal = (x: Animal) => x.sound
     assert(helloAnimal(new Animal) === "rustle")
@@ -37,7 +58,7 @@ class TypeParameterSuite extends FunSuite {
     //assert(helloChicken(new Animal) === "rustle") // not compile
     //assert(helloChicken(new Bird) === "call") // not compile
     assert(helloChicken(new Chicken) === "cluck")
-    
+
     val animal: String => Animal = {
       case "Bird" => new Bird
       case "Chicken" => new Chicken
@@ -49,9 +70,11 @@ class TypeParameterSuite extends FunSuite {
   }
 
   test("upper bound") {
-    def animalSounds[T <: Animal](xs: T*): Seq[String] = xs map(_.sound)
-    assert(animalSounds(new Animal, new Bird, new Chicken)
-        === Seq("rustle", "call", "cluck"))
+    def animalSounds[T <: Animal](xs: T*): Seq[String] = xs map (_.sound)
+    assert(animalSounds(new Animal, new Bird, new Chicken) === Seq("rustle", "call", "cluck"))
+
+    def birdSounds[T <: Bird](xs: T*): Seq[String] = xs map (_.sound)
+    assert(birdSounds(new Bird, new Chicken) === Seq("call", "cluck"))
   }
 
   test("lower bound - Node") {
@@ -72,9 +95,12 @@ class TypeParameterSuite extends FunSuite {
     class Stack[+A] {
       def push[B >: A](elem: B): Stack[B] = new Stack[B] {
         override def top: B = elem
+
         override def pop: Stack[B] = Stack.this
       }
+
       def top: A = throw new NoSuchElementException
+
       def pop: Stack[A] = throw new NoSuchElementException
     }
 
