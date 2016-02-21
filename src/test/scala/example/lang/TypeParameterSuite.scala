@@ -1,9 +1,10 @@
 package example.lang
 
-import org.scalatest.FunSuite
-
 import org.junit.runner.RunWith
+import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
+
+import scala.annotation.tailrec
 
 @RunWith(classOf[JUnitRunner])
 class TypeParameterSuite extends FunSuite {
@@ -36,11 +37,15 @@ class TypeParameterSuite extends FunSuite {
   }
 
   class Bird extends Animal {
-    override def sound: String = "call"
+    override def sound: String = call
+
+    def call: String = "call"
   }
 
   class Chicken extends Bird {
-    override def sound: String = "cluck"
+    override def call: String = cluck
+
+    def cluck: String = "cluck"
   }
 
   test("trait Function1[-T1, +R] extends AnyRef") {
@@ -77,39 +82,110 @@ class TypeParameterSuite extends FunSuite {
     assert(birdSounds(new Bird, new Chicken) === Seq("call", "cluck"))
   }
 
-  test("lower bound - Node") {
+  test("covariant Node[+T]") {
     case class Node[+T](head: T, tail: Node[T]) {
       def prepend[U >: T](elem: U): Node[U] = Node(elem, this)
+
+      def root: T = {
+        @tailrec
+        def f(x: Node[T]): T = x match {
+          case Node(a, null) => a
+          case Node(a, b) => f(b)
+        }
+        f(this)
+      }
     }
 
-    val chickens: Node[Chicken] = Node(new Chicken, null)
-    val birds: Node[Bird] = chickens.prepend(new Bird)
-    val animals: Node[Animal] = birds.prepend(new Animal)
+    // Node[Chicken]
+    val chickens = Node(new Chicken, null)
+    val chicken = chickens.root
+    assert(chicken.cluck === "cluck")
+    assert(chicken.call === "cluck")
+    assert(chicken.sound === "cluck")
+
+    // Node[Bird]
+    val birds = chickens.prepend(new Bird)
+    val chickenAsBird = birds.root
+    //assert(chickenAsBird.cluck === "cluck") // not compile
+    assert(chickenAsBird.call === "cluck")
+    assert(chickenAsBird.sound === "cluck")
+
+    // Node[Animal]
+    val animals = birds.prepend(new Animal)
+    val chickenAsAnimal = animals.root
+    //assert(chickenAsAnimal.cluck === "cluck") // not compile
+    //assert(chickenAsAnimal.call === "cluck") // not compile
+    assert(chickenAsAnimal.sound === "cluck")
+
+    // Node[Bird]?
     //val reborn: Node[Bird] = animals.prepend(new Bird) // not compile
-    assert(animals.head.sound === "rustle")
-    assert(animals.tail.head.sound === "call")
-    assert(animals.tail.tail.head.sound === "cluck")
   }
 
-  test("lower bound - Stack") {
-    class Stack[+A] {
-      def push[B >: A](elem: B): Stack[B] = new Stack[B] {
-        override def top: B = elem
+  class Response(val message: String)
 
-        override def pop: Stack[B] = Stack.this
-      }
+  class HeaderResponse(override val message: String,
+                       val header: List[String]) extends Response(message)
 
-      def top: A = throw new NoSuchElementException
+  class BodyResponse(override val message: String,
+                     override val header: List[String],
+                     val body: Array[Byte]) extends HeaderResponse(message, header)
 
-      def pop: Stack[A] = throw new NoSuchElementException
+  test("invariant Bag[T]") {
+    trait Bag[T] {
+      def add(x: T): Bag[T]
+
+      def toSeq: Seq[T]
     }
 
-    val chickens = new Stack[Chicken].push(new Chicken)
-    val birds: Stack[Bird] = chickens.push(new Bird)
-    val animals: Stack[Animal] = birds.push(new Animal)
-    //val reborn: Node[Bird] = animals.push(new Bird) // not compile
-    assert(animals.top.sound === "rustle")
-    assert(animals.pop.top.sound === "call")
-    assert(animals.pop.pop.top.sound === "cluck")
+    object Bag {
+      def apply[T](xs: T*): Bag[T] = new BagImpl(xs.reverse.toList)
+
+      private class BagImpl[T](val xs: List[T]) extends Bag[T] {
+        override def add(x: T): Bag[T] = new BagImpl(x :: xs)
+
+        override def toSeq: Seq[T] = xs.reverse.toSeq
+      }
+
+    }
+
+    val forbidden = new Response(
+      "HTTP/1.1 403 Forbidden")
+    val seeOther = new HeaderResponse(
+      "HTTP/1.1 303 See Other",
+      List("Location: another.example.net"))
+    val ok = new BodyResponse(
+      "HTTP/1.1 200 OK",
+      List("Content-Type: text/plain"),
+      "Hello".getBytes)
+
+    // Bag[Response]
+    val responseStack = Bag(ok, seeOther, forbidden)
+    val response = responseStack.toSeq.head
+    assert(ok.message === response.message)
+    //assert(ok.header === response.header) // not compile
+    //assert(ok.body === response.body) // not compile
+    responseStack.add(ok)
+    responseStack.add(seeOther)
+    responseStack.add(forbidden)
+
+    // Bag[HeaderResponse]
+    val headerResponseStack = Bag(ok, seeOther)
+    val headerResponse = headerResponseStack.toSeq.head
+    assert(ok.message === headerResponse.message)
+    assert(ok.header === headerResponse.header)
+    //assert(ok.body === headerResponse.body) // not compile
+    headerResponseStack.add(ok)
+    headerResponseStack.add(seeOther)
+    //headerResponseStack.add(forbidden) // not compile
+
+    // Bag[BodyResponse]
+    val bodyResponseStack = Bag(ok)
+    val bodyResponse = bodyResponseStack.toSeq.head
+    assert(ok.message === bodyResponse.message)
+    assert(ok.header === bodyResponse.header)
+    assert(ok.body === bodyResponse.body)
+    bodyResponseStack.add(ok)
+    //bodyResponseStack.add(seeOther) // not compile
+    //bodyResponseStack.add(forbidden) // not compile
   }
 }
