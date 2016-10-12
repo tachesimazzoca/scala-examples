@@ -7,26 +7,37 @@ import scala.annotation.tailrec
 class TypeParameterSuite extends FunSuite {
 
   test("variance") {
-    class Covariant[+A]
-    class Contravariant[-A]
     class Invariant[A]
+    val invariant1: Invariant[String] = new Invariant[String]
+    // Invariant[String] doesn't conform to expected type Invariant[Any]
+    //val invariant2: Invariant[Any] = new Invariant[String]
+    // Invariant[Any] doesn't conform to expected type Invariant[String]
+    //val invariant3: Invariant[String] = new Invariant[Any]
 
-    val a: Covariant[AnyRef] = new Covariant[String]
-    val b: Contravariant[String] = new Contravariant[AnyRef]
-    val c: Invariant[String] = new Invariant[String]
+    class Covariant[+A]
+    val covariant1: Covariant[String] = new Covariant[String]
+    val covariant2: Covariant[Any] = new Covariant[String]
+    // Covariant[Any] doesn't conform to expected type Covariant[String]
+    //val covariant3: Covariant[String] = new Covariant[Any]
+
+    class Contravariant[-A]
+    val contravariant1: Contravariant[String] = new Contravariant[String]
+    // Contravariant[String] doesn't conform to expected type Contravariant[Any]
+    //val contravariant2: Contravariant[Any] = new Contravariant[String]
+    val contravariant3: Contravariant[String] = new Contravariant[Any]
   }
 
   test("Array[T] is invariant") {
     val xs: Array[Int] = Array(1, 2, 3)
     // Array[Int] doesn't conform to expected type Array[Any]
-    //val ys: Array[Any] = xs // not compile
+    //val ys: Array[Any] = xs
   }
 
   test("List[+A] is covariant") {
     val xs: List[Number] = List(1, 2, 3)
     val ys: List[Any] = xs
     // List[Number] doesn't conform to expected type Array[Int]
-    //val ys: List[Int] = xs // not compile
+    //val ys: List[Int] = xs
   }
 
   class Animal {
@@ -52,13 +63,13 @@ class TypeParameterSuite extends FunSuite {
     assert(helloAnimal(new Chicken) === "cluck")
 
     val helloBird = (x: Bird) => x.sound
-    //assert(helloBird(new Animal) === "rustle") // not compile
+    //assert(helloBird(new Animal) === "rustle") // type mismatch
     assert(helloBird(new Bird) === "call")
     assert(helloBird(new Chicken) === "cluck")
 
     val helloChicken = (x: Chicken) => x.sound
-    //assert(helloChicken(new Animal) === "rustle") // not compile
-    //assert(helloChicken(new Bird) === "call") // not compile
+    //assert(helloChicken(new Animal) === "rustle") // type mismatch
+    //assert(helloChicken(new Bird) === "call") // type mismatch
     assert(helloChicken(new Chicken) === "cluck")
 
     val animal: String => Animal = {
@@ -103,19 +114,18 @@ class TypeParameterSuite extends FunSuite {
     // Node[Bird]
     val birds = chickens.prepend(new Bird)
     val chickenAsBird = birds.root
-    //assert(chickenAsBird.cluck === "cluck") // not compile
+    //assert(chickenAsBird.cluck === "cluck") // cannot resolve symbol
     assert(chickenAsBird.call === "cluck")
     assert(chickenAsBird.sound === "cluck")
 
     // Node[Animal]
     val animals = birds.prepend(new Animal)
     val chickenAsAnimal = animals.root
-    //assert(chickenAsAnimal.cluck === "cluck") // not compile
-    //assert(chickenAsAnimal.call === "cluck") // not compile
+    //assert(chickenAsAnimal.cluck === "cluck") // cannot resolve symbol
+    //assert(chickenAsAnimal.call === "cluck") // cannot resolve symbol
     assert(chickenAsAnimal.sound === "cluck")
-
-    // Node[Bird]?
-    //val reborn: Node[Bird] = animals.prepend(new Bird) // not compile
+    // Node[Animal] doesn't conform to expected type Node[Bird]
+    //val reborn: Node[Bird] = animals.prepend(new Bird)
   }
 
   class Response(val message: String)
@@ -129,7 +139,7 @@ class TypeParameterSuite extends FunSuite {
     override val header: List[String],
     val body: Array[Byte]) extends HeaderResponse(message, header)
 
-  abstract class Bag[T] {
+  trait Bag[T] {
     def add(x: T): Bag[T]
 
     def toSeq: Seq[T]
@@ -162,8 +172,8 @@ class TypeParameterSuite extends FunSuite {
     val responseStack = Bag(ok, seeOther, forbidden)
     val response = responseStack.toSeq.head
     assert(ok.message === response.message)
-    //assert(ok.header === response.header) // not compile
-    //assert(ok.body === response.body) // not compile
+    //assert(ok.header === response.header) // cannot resolve symbol
+    //assert(ok.body === response.body) // cannot resolve symbol
     responseStack.add(ok)
     responseStack.add(seeOther)
     responseStack.add(forbidden)
@@ -173,10 +183,10 @@ class TypeParameterSuite extends FunSuite {
     val headerResponse = headerResponseStack.toSeq.head
     assert(ok.message === headerResponse.message)
     assert(ok.header === headerResponse.header)
-    //assert(ok.body === headerResponse.body) // not compile
+    //assert(ok.body === headerResponse.body) // cannot resolve symbol
     headerResponseStack.add(ok)
     headerResponseStack.add(seeOther)
-    //headerResponseStack.add(forbidden) // not compile
+    //headerResponseStack.add(forbidden) // type mismatch
 
     // Bag[BodyResponse]
     val bodyResponseStack = Bag(ok)
@@ -185,7 +195,7 @@ class TypeParameterSuite extends FunSuite {
     assert(ok.header === bodyResponse.header)
     assert(ok.body === bodyResponse.body)
     bodyResponseStack.add(ok)
-    //bodyResponseStack.add(seeOther) // not compile
-    //bodyResponseStack.add(forbidden) // not compile
+    //bodyResponseStack.add(seeOther) // type mismatch
+    //bodyResponseStack.add(forbidden) // type mismatch
   }
 }
