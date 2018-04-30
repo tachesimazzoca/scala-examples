@@ -66,4 +66,33 @@ class PolymorphicFunctionsSuite extends FunSuite {
     assert(label("baz\n") === "[baz]")
     assert(label("qu x") === "[qu x]")
   }
+
+  test("const") {
+    // identity: A => A
+    assert(identity(1) === 1)
+    assert(identity("foo") === "foo")
+
+    // const: A => B => A
+    def f[B]: (=> B) => Int = const(1)
+    assert(f("foo") === 1)
+    assert(f(2) === 1)
+    assert(f(println("Keep calm and do nothing.")) === 1)
+    assert(f(println) === 1)
+
+    // const(identity): B => A => A
+    def g[B, A]: (=> B) => A => A = const(identity)
+    assert(g("foo")(1) === 1)
+    assert(g(2)(1) === 1)
+    assert(g(println("Keep calm and do nothing."))("foo") === "foo")
+    assert(g(println)(123) === 123)
+
+    val xs = Seq("foo", "bar", "baz")
+    // the length of xs
+    assert(xs.foldRight(0)((_, a) => a + 1) === xs.size)
+    def inc: Int => Int = _ + 1
+    assert(xs.foldRight(0)(uncurry(const(inc)(_: Any))) === xs.size)
+    // the last item of xs
+    assert(xs.reduceRight((_, a) => a) === "baz")
+    assert(xs.reduceRight(uncurry(const(identity(_: String))(_: Any))) === "baz")
+  }
 }
