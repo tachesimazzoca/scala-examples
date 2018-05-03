@@ -74,6 +74,7 @@ class PolymorphicFunctionsSuite extends FunSuite {
 
     // const: A => B => A
     def f[B]: (=> B) => Int = const(1)
+
     assert(f("foo") === 1)
     assert(f(2) === 1)
     assert(f(println("Keep calm and do nothing.")) === 1)
@@ -81,18 +82,28 @@ class PolymorphicFunctionsSuite extends FunSuite {
 
     // const(identity): B => A => A
     def g[B, A]: (=> B) => A => A = const(identity)
+
     assert(g("foo")(1) === 1)
     assert(g(2)(1) === 1)
     assert(g(println("Keep calm and do nothing."))("foo") === "foo")
     assert(g(println)(123) === 123)
 
-    val xs = Seq("foo", "bar", "baz")
     // the length of xs
+    val xs = Seq("foo", "bar", "baz")
     assert(xs.foldRight(0)((_, a) => a + 1) === xs.size)
-    def inc: Int => Int = _ + 1
-    assert(xs.foldRight(0)(uncurry(const(inc)(_: Any))) === xs.size)
+    assert(xs.foldRight(0)(uncurry(const((_: Int) + 1)(_: String))) === xs.size)
+
     // the last item of xs
     assert(xs.reduceRight((_, a) => a) === "baz")
-    assert(xs.reduceRight(uncurry(const(identity(_: String))(_: Any))) === "baz")
+    assert(xs.reduceRight(uncurry(const(identity(_: String))(_: String))) === "baz")
+
+    // emulates "if ... then ... else ..."
+    def ifThenElse[A]: Boolean => A => A => A = {
+      case true => curry(const(_: A)(_: A))
+      case false => const(identity(_: A))(_: A)
+    }
+
+    assert(ifThenElse(true)(1)(2) === 1)
+    assert(ifThenElse(false)(1)(2) === 2)
   }
 }
