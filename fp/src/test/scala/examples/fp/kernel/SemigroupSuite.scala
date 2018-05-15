@@ -5,15 +5,15 @@ import org.scalatest.FunSuite
 class SemigroupSuite extends FunSuite {
 
   implicit val intAdditionSemigroup = new Semigroup[Int] {
-    def combine(x: Int, y: Int) = x + y
+    def combine(x: Int, y: Int): Int = x + y
   }
 
   implicit val stringAdditionSemigroup = new Semigroup[String] {
-    def combine(x: String, y: String) = x + y
+    def combine(x: String, y: String): String = x + y
   }
 
   implicit def listAdditionSemigroup[A] = new Semigroup[List[A]] {
-    def combine(x: List[A], y: List[A]) = x ++ y
+    def combine(x: List[A], y: List[A]): List[A] = x ++ y
   }
 
   test("intAdditionSemigroup") {
@@ -52,7 +52,7 @@ class SemigroupSuite extends FunSuite {
   test("mergeMap") {
     import Semigroup.maybeCombine
 
-    def mergeMap[K, V : Semigroup](x: Map[K, V], y: Map[K, V]): Map[K, V] = x.foldLeft(y) {
+    def mergeMap[K, V: Semigroup](x: Map[K, V], y: Map[K, V]): Map[K, V] = x.foldLeft(y) {
       case (acc, (k, v)) => acc.updated(k, maybeCombine(v, acc.get(k)))
     }
 
