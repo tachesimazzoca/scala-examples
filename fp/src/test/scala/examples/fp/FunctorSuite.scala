@@ -50,4 +50,18 @@ class FunctorSuite extends FunSuite {
 
     assert(FG.map(List(Some(1), None, Some(3)))(_ + 1) === List(Some(2), None, Some(4)))
   }
+
+  test("nested") {
+    val listOptions = List(Some(1), None, Some(3))
+
+    // needs to explicitly pass in the composed instance
+    type ListOption[A] = List[Option[A]]
+    val listOptionFunctor = Functor[List].compose[Option]
+    assert(Functor[ListOption](listOptionFunctor).map(listOptions)(identity) === listOptions)
+
+    // using Nested
+    import data.Nested
+    val nested: Nested[List, Option, Int] = Nested(List(Some(1), None, Some(3)))
+    assert(Functor[Nested[List, Option, ?]].map(nested)(_ * 2) === Nested(List(Some(2), None, Some(6))))
+  }
 }
