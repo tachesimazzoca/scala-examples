@@ -11,5 +11,4 @@ object TypeClass {
     def map[B](f: A => B): F[B] = F.map(fa)(f)
     def flatMap[B](f: A => F[B]): F[B] = F.flatMap(fa)(f)
   }
-
 }

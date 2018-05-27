@@ -6,10 +6,11 @@ trait Functor[F[_]] { self =>
 
   def lift[A, B](f: A => B): F[A] => F[B] = fa => map(fa)(f)
 
-  def compose[G[_] : Functor]: Functor[Lambda[A => F[G[A]]]] = new ComposedFunctor[F, G] {
-    val F = self
-    val G = Functor[G]
-  }
+  def compose[G[_] : Functor]: Functor[Lambda[A => F[G[A]]]] =
+    new ComposedFunctor[F, G] {
+      val F = self
+      val G = Functor[G]
+    }
 }
 
 object Functor {
@@ -17,7 +18,6 @@ object Functor {
 }
 
 private[fp] trait ComposedFunctor[F[_], G[_]] extends Functor[Lambda[A => F[G[A]]]] {
-
   def F: Functor[F]
   def G: Functor[G]
 

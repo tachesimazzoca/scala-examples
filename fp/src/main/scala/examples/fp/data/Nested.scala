@@ -7,7 +7,7 @@ final case class Nested[F[_], G[_], A](value: F[G[A]])
 object Nested extends NestedInstances
 
 private[data] sealed abstract class NestedInstances {
-  implicit def dataFunctorForNested[F[_]: Functor, G[_]: Functor]: Functor[Nested[F, G, ?]] =
+  implicit def dataFunctorForNested[F[_] : Functor, G[_] : Functor]: Functor[Nested[F, G, ?]] =
     new NestedFunctor[F, G] {
       val FG: Functor[Lambda[A => F[G[A]]]] = Functor[F].compose[G]
     }
