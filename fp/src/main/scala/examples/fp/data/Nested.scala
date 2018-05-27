@@ -17,5 +17,5 @@ private[data] trait NestedFunctor[F[_], G[_]] extends Functor[Nested[F, G, ?]] {
   def FG: Functor[Lambda[A => F[G[A]]]]
 
   override def map[A, B](fga: Nested[F, G, A])(f: A => B): Nested[F, G, B] =
-    Nested(FG.map(fga.value)(f))
+    Nested[F, G, B](FG.map(fga.value)(f))
 }
