@@ -4,7 +4,7 @@ import org.scalatest.FunSuite
 
 class ApplySuite extends FunSuite {
 
-  implicit def applyForMap[K] = new Apply[Map[K, ?]] {
+  implicit def applyForMap[K]: Apply[Map[K, ?]] = new Apply[Map[K, ?]] {
     override def ap[A, B](ff: Map[K, A => B])(fa: Map[K, A]): Map[K, B] = fa.flatMap { case (k, v) =>
       ff.get(k).map(f => (k, f(v)))
     }
@@ -43,5 +43,20 @@ class ApplySuite extends FunSuite {
       'password -> Some("dead beef"),
       'url -> None
     ))
+  }
+
+  implicit def applyForOption: Apply[Option] = new Apply[Option] {
+    override def ap[A, B](ff: Option[A => B])(fa: Option[A]): Option[B] = ff.flatMap(fa.map(_))
+
+    override def map[A, B](fa: Option[A])(f: A => B): Option[B] = fa.map(f)
+  }
+
+  test("applyForOption") {
+    val F = Apply[Option]
+
+    val removeWhitespace: Option[String => String] = Some(_.trim)
+
+    assert(F.ap(removeWhitespace)(None) === None)
+    assert(F.ap(removeWhitespace)(Some(" foo ")) === Some("foo"))
   }
 }
