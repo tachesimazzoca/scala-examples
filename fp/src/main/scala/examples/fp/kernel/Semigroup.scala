@@ -5,7 +5,7 @@ trait Semigroup[A] {
 }
 
 object Semigroup {
-  def apply[A: Semigroup]: Semigroup[A] = implicitly[Semigroup[A]]
+  def apply[A: Semigroup](implicit ev: Semigroup[A]): Semigroup[A] = ev
 
   def maybeCombine[A: Semigroup](x: A, oy: Option[A]): A =
     oy.map(Semigroup[A].combine(x, _)).getOrElse(x)

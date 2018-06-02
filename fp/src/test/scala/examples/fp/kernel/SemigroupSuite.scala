@@ -5,15 +5,15 @@ import org.scalatest.FunSuite
 class SemigroupSuite extends FunSuite {
 
   implicit val intAdditionSemigroup = new Semigroup[Int] {
-    def combine(x: Int, y: Int): Int = x + y
+    override def combine(x: Int, y: Int): Int = x + y
   }
 
   implicit val stringAdditionSemigroup = new Semigroup[String] {
-    def combine(x: String, y: String): String = x + y
+    override def combine(x: String, y: String): String = x + y
   }
 
-  implicit def listAdditionSemigroup[A] = new Semigroup[List[A]] {
-    def combine(x: List[A], y: List[A]): List[A] = x ++ y
+  implicit def listAdditionSemigroup[A]: Semigroup[List[A]] = new Semigroup[List[A]] {
+    override def combine(x: List[A], y: List[A]): List[A] = x ++ y
   }
 
   test("intAdditionSemigroup") {

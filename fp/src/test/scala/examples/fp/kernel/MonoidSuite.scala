@@ -5,31 +5,29 @@ import org.scalatest.FunSuite
 class MonoidSuite extends FunSuite {
 
   implicit val intAdditionMonoid = new Monoid[Int] {
-    def empty: Int = 0
-
-    def combine(x: Int, y: Int): Int = x + y
+    override def empty: Int = 0
+    override def combine(x: Int, y: Int): Int = x + y
   }
 
   implicit val stringAdditionMonoid = new Monoid[String] {
-    def empty: String = ""
-
-    def combine(x: String, y: String): String = x + y
+    override def empty: String = ""
+    override def combine(x: String, y: String): String = x + y
   }
 
-  implicit def seqAdditionMonoid[A] = new Monoid[Seq[A]] {
-    def empty: Seq[A] = Seq.empty[A]
-
-    def combine(x: Seq[A], y: Seq[A]): Seq[A] = x ++ y
+  implicit def seqAdditionMonoid[A]: Monoid[Seq[A]] = new Monoid[Seq[A]] {
+    override def empty: Seq[A] = Seq.empty[A]
+    override def combine(x: Seq[A], y: Seq[A]): Seq[A] = x ++ y
   }
 
   case class Pair[T1, T2](first: T1, second: T2)
 
-  implicit def pairAdditionMonoid[A: Monoid, B: Monoid] = new Monoid[Pair[A, B]] {
-    def empty: Pair[A, B] = Pair(Monoid[A].empty, Monoid[B].empty)
+  implicit def pairAdditionMonoid[A: Monoid, B: Monoid]: Monoid[Pair[A, B]] =
+    new Monoid[Pair[A, B]] {
+      override def empty: Pair[A, B] = Pair(Monoid[A].empty, Monoid[B].empty)
 
-    def combine(x: Pair[A, B], y: Pair[A, B]): Pair[A, B] =
-      Pair(Monoid[A].combine(x.first, y.first), Monoid[B].combine(x.second, y.second))
-  }
+      override def combine(x: Pair[A, B], y: Pair[A, B]): Pair[A, B] =
+        Pair(Monoid[A].combine(x.first, y.first), Monoid[B].combine(x.second, y.second))
+    }
 
   def combineAll[A: Monoid](xs: Seq[A]): A =
     xs.foldRight(Monoid[A].empty)(Monoid[A].combine(_, _))
