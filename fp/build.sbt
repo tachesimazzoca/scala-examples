@@ -2,7 +2,7 @@ name := "scala-examples-fp"
 
 version := "0.1.0-SNAPSHOT"
 
-scalaVersion := "2.11.12"
+scalaVersion := "2.12.8"
 
 scalacOptions ++= Seq(
   "-language:higherKinds",
@@ -10,7 +10,7 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "org.scalatest" % "scalatest_2.11" % "3.0.0" % "test"
+  "org.scalatest" %% "scalatest" % "3.0.5" % "test"
 )
 
 resolvers += Resolver.sonatypeRepo("releases")
